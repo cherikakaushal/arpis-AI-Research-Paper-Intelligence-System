@@ -1,0 +1,1 @@
+import ProjectSection from "@/components/projects/ProjectSection";export default function Page(){return <ProjectSection title="Compare" description="Compare methods, datasets, results, and limitations."/>}
