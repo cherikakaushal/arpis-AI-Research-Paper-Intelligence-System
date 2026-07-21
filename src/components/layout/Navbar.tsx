@@ -6,6 +6,10 @@ import { MdLightMode, MdDarkMode } from "react-icons/md";
 
 // Page label mapper
 function getPageLabel(pathname: string) {
+  if (pathname === "/") return "Dashboard";
+  if (pathname.startsWith("/projects/new")) return "New Project";
+  if (pathname.startsWith("/projects/")) return "Project Workspace";
+  if (pathname.startsWith("/projects")) return "Projects";
   if (pathname.startsWith("/upload")) return "Upload Research Paper";
   if (pathname.startsWith("/analyze")) return "Analyzing Paper";
   if (pathname.startsWith("/results")) return "Analysis Results";
@@ -82,7 +86,7 @@ export default function Navbar() {
       <div className="arpis-navbar-right">
 
         {/* MODE CHIP */}
-        <div className="arpis-chip">Mock AI Mode</div>
+        <div className="arpis-chip">Research OS</div>
 
         {/* THEME TOGGLE */}
         <button
