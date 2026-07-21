@@ -1,0 +1,9 @@
+export type ReadingStatus="Unread"|"Reading"|"Completed"|"Reviewed";
+export type Paper={id:string;projectId:string;title:string;authors:string[];year:number;abstract:string;keywords:string[];journal:string;pages:number;uploadedAt:string;status:ReadingStatus;tags:string[];favorite:boolean;fileName?:string};
+export const PAPERS_STORAGE_KEY="arpis_papers_v1";
+export const seedPapers:Paper[]=[
+ {id:"attention-is-all-you-need",projectId:"ai-healthcare",title:"Attention Is All You Need",authors:["Ashish Vaswani","Noam Shazeer","Niki Parmar"],year:2017,abstract:"The dominant sequence transduction models are based on complex recurrent or convolutional neural networks. This work proposes the Transformer, an architecture based solely on attention mechanisms.",keywords:["attention","transformer","sequence modeling"],journal:"NeurIPS",pages:15,uploadedAt:"2026-07-20T10:00:00.000Z",status:"Reviewed",tags:["Transformer","LLM"],favorite:true},
+ {id:"bert",projectId:"ai-healthcare",title:"BERT: Pre-training of Deep Bidirectional Transformers",authors:["Jacob Devlin","Ming-Wei Chang","Kenton Lee"],year:2019,abstract:"BERT introduces deep bidirectional representations by jointly conditioning on both left and right context in all layers.",keywords:["BERT","language models","pretraining"],journal:"NAACL",pages:16,uploadedAt:"2026-07-18T10:00:00.000Z",status:"Reading",tags:["LLM","Transformer"],favorite:false},
+ {id:"gpt-4-technical-report",projectId:"ai-healthcare",title:"GPT-4 Technical Report",authors:["OpenAI"],year:2023,abstract:"GPT-4 is a large-scale multimodal model that can accept image and text inputs and produce text outputs.",keywords:["multimodal","large language model"],journal:"arXiv",pages:100,uploadedAt:"2026-07-15T10:00:00.000Z",status:"Unread",tags:["LLM","Healthcare"],favorite:true},
+];
+export function paperId(title:string){return `${title.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"paper"}-${Date.now().toString(36)}`}
