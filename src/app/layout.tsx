@@ -4,20 +4,16 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "../styles/theme.css";
 
-import { Inter } from "next/font/google";
 import ParticleField from "@/components/layout/ParticleField";
 import AppShell from "@/components/layout/AppShell";
-
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-});
+import { ProjectProvider } from "@/components/projects/ProjectProvider";
+import { PaperProvider } from "@/components/papers/PaperProvider";
 
 // META + FAVICON
 export const metadata: Metadata = {
-  title: "ARPIS — AI Research Paper Intelligence System",
+  title: "ARPIS — AI Research Operating System",
   description:
-    "ARPIS is a futuristic AI-powered system for analyzing and summarizing research papers with scientific precision.",
+    "A project-first AI workspace for papers, notes, conversations, knowledge graphs, and literature reviews.",
 
   icons: {
     icon: "/favicon.png?v=10",
@@ -47,14 +43,14 @@ export default function RootLayout({
       </head>
 
       <body
-        className={`${inter.className} arpis-root`}
+        className="arpis-root"
         suppressHydrationWarning={true}
       >
         {/* PARTICLE BACKGROUND (CLIENT-ONLY) */}
         <ParticleField />
 
         {/* FULL APP LAYOUT */}
-        <AppShell>{children}</AppShell>
+        <ProjectProvider><PaperProvider><AppShell>{children}</AppShell></PaperProvider></ProjectProvider>
       </body>
     </html>
   );
