@@ -1,0 +1,1 @@
+import ProjectSection from "@/components/projects/ProjectSection";export default function Page(){return <ProjectSection title="Notes" description="Capture and connect insights inside this project."/>}
