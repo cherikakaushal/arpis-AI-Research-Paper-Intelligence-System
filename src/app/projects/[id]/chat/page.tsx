@@ -1,0 +1,1 @@
+import ProjectSection from "@/components/projects/ProjectSection";export default function Page(){return <ProjectSection title="AI Chat" description="Ask questions grounded in this project's papers and notes."/>}
