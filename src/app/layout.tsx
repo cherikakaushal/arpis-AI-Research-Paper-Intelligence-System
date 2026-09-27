@@ -8,6 +8,7 @@ import ParticleField from "@/components/layout/ParticleField";
 import AppShell from "@/components/layout/AppShell";
 import { ProjectProvider } from "@/components/projects/ProjectProvider";
 import { PaperProvider } from "@/components/papers/PaperProvider";
+import { ResearchProvider } from "@/components/research/ResearchProvider";
 
 // META + FAVICON
 export const metadata: Metadata = {
@@ -50,7 +51,7 @@ export default function RootLayout({
         <ParticleField />
 
         {/* FULL APP LAYOUT */}
-        <ProjectProvider><PaperProvider><AppShell>{children}</AppShell></PaperProvider></ProjectProvider>
+        <ProjectProvider><PaperProvider><ResearchProvider><AppShell>{children}</AppShell></ResearchProvider></PaperProvider></ProjectProvider>
       </body>
     </html>
   );
