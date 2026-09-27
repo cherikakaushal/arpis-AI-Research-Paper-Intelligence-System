@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { MdLightMode, MdDarkMode } from "react-icons/md";
+import { FiMenu } from "react-icons/fi";
 
 // Page label mapper
 function getPageLabel(pathname: string) {
@@ -14,6 +15,14 @@ function getPageLabel(pathname: string) {
   if (pathname.startsWith("/analyze")) return "Analyzing Paper";
   if (pathname.startsWith("/results")) return "Analysis Results";
   if (pathname.startsWith("/history")) return "History";
+  if (pathname.startsWith("/compare")) return "Compare Papers";
+  if (pathname.startsWith("/graph")) return "Knowledge Graph";
+  if (pathname.startsWith("/fetch")) return "Find a Research Paper";
+  if (pathname.startsWith("/workspace")) return "Workspace";
+  if (pathname.startsWith("/research-chat")) return "Research Chat";
+  if (pathname.startsWith("/pdf-heatmap")) return "PDF Heatmap";
+  if (pathname.startsWith("/terminal")) return "Research Terminal";
+  if (pathname.startsWith("/playlab")) return "PlayLab";
   return "AI Research Paper Intelligence System";
 }
 
@@ -26,7 +35,7 @@ export default function Navbar() {
 
   // Detect mobile view
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 700);
+    const check = () => setIsMobile(window.innerWidth < 900);
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
@@ -34,18 +43,26 @@ export default function Navbar() {
 
   // Load saved theme
   useEffect(() => {
-    const saved =
-      (localStorage.getItem("arpis_theme") as "dark" | "light") || "dark";
-    setTheme(saved);
-    document.documentElement.setAttribute("data-theme", saved);
+    const timer = window.setTimeout(() => {
+      let saved: "dark" | "light" = "dark";
+      try {
+        const stored = localStorage.getItem("arpis_theme");
+        if (stored === "light" || stored === "dark") saved = stored;
+      } catch {}
+      setTheme(saved);
+      document.documentElement.setAttribute("data-theme", saved);
+      document.documentElement.classList.toggle("light", saved === "light");
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   // Toggle Theme
   const toggleTheme = () => {
     const next = theme === "dark" ? "light" : "dark";
     setTheme(next);
-    localStorage.setItem("arpis_theme", next);
+    try { localStorage.setItem("arpis_theme", next); } catch {}
     document.documentElement.setAttribute("data-theme", next);
+    document.documentElement.classList.toggle("light", next === "light");
   };
 
   // Open sidebar (mobile)
@@ -62,6 +79,8 @@ export default function Navbar() {
         {isMobile && (
           <button
             onClick={openSidebar}
+            aria-label="Open navigation menu"
+            title="Open navigation menu"
             style={{
               background: "transparent",
               border: "1px solid var(--arpis-border-subtle)",
@@ -74,7 +93,7 @@ export default function Navbar() {
               fontSize: "1.2rem",
             }}
           >
-            ☰
+            <FiMenu aria-hidden="true"/>
           </button>
         )}
 
@@ -91,6 +110,8 @@ export default function Navbar() {
         {/* THEME TOGGLE */}
         <button
           onClick={toggleTheme}
+          aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+          title={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
           className="w3-button w3-round-large"
           style={{
             background: "transparent",
