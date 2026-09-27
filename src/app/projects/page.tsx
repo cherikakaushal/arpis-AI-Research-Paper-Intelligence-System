@@ -1,6 +1,1 @@
-"use client";
-import Link from "next/link";
-import { FiArrowRight, FiPlus } from "react-icons/fi";
-import { useProjects } from "@/components/projects/ProjectProvider";
-import styles from "./projects.module.css";
-export default function ProjectsPage(){const {projects,ready,openCreateProject}=useProjects();return <main className={styles.page}><header><div><span>Library</span><h1>Your projects</h1><p>Focused workspaces for every research question.</p></div><button onClick={openCreateProject}><FiPlus/> New project</button></header>{!ready?<p>Loading projects…</p>:projects.length===0?<section className={styles.empty}><h2>No projects yet</h2><p>Create your first research workspace.</p><button onClick={openCreateProject}>Create Project</button></section>:<div className={styles.grid}>{projects.map(project=><Link href={`/projects/${project.id}`} className={styles.card} key={project.id}><div className={styles.icon} style={{color:project.color,background:`${project.color}1f`}}>{project.icon}</div><small>{project.papers} papers · {project.domain}</small><h2>{project.name}</h2><p>{project.description||"A focused ARPIS research workspace."}</p><span>Open workspace <FiArrowRight/></span></Link>)}</div>}</main>}
+﻿export { default } from "@/components/product/Projects";
