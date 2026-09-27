@@ -181,8 +181,22 @@ body {
   }
 
   .arpis-shell-sidebar {
-    display: none;
+    display: block;
+    width: 0;
+    height: 0;
+    overflow: visible;
+    background: transparent;
+    border: 0;
   }
+}
+
+.arpis-sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  border: 0;
+  background: rgba(0, 0, 0, .52);
+  backdrop-filter: blur(2px);
 }
 
 @media (max-width: 640px) {
