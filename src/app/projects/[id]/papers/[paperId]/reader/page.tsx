@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -24,10 +24,10 @@ export default function Reader() {
         return;
       }
       objectUrl = savedUrl;
-      setUrl(savedUrl ?? sessionStorage.getItem(`arpis_pdf_${paperId}`));
+      setUrl(savedUrl);
     }).catch((cause: unknown) => {
       if (!active) return;
-      setUrl(sessionStorage.getItem(`arpis_pdf_${paperId}`));
+      setUrl(null);
       setError(cause instanceof Error ? cause.message : "Unable to open the saved PDF.");
     });
     return () => {
@@ -37,7 +37,7 @@ export default function Reader() {
   }, [paperId]);
 
   if (!ready) return <main className={styles.reader}>Loading paper…</main>;
-  if (!paper) return <main className={styles.reader}><h1>Paper not found</h1><Link href={`/projects/${id}/papers`}>Back to library</Link></main>;
+  if (!paper || paper.projectId !== id) return <main className={styles.reader}><h1>Paper not found</h1><Link href={`/projects/${id}/papers`}>Back to library</Link></main>;
 
   return <main className={styles.reader}>
     <header><Link href={`/projects/${id}/papers/${paperId}`}>← Details</Link><div><strong>{paper.title}</strong><span>{paper.status}</span></div><Link href={`/projects/${id}/papers/${paperId}/notes`}>Notes</Link></header>
@@ -54,3 +54,4 @@ export default function Reader() {
     </div>
   </main>;
 }
+
