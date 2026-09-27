@@ -1,18 +1,68 @@
 "use client";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect,useState } from "react";
-import { FiBarChart2,FiBookOpen,FiDownload,FiFileText,FiGitBranch,FiHome,FiLayers,FiMessageSquare,FiPlus,FiSettings,FiX } from "react-icons/fi";
+import { useEffect, useState } from "react";
+import { FiBarChart2, FiBookOpen, FiDownload, FiFileText, FiGitBranch, FiHome, FiLayers, FiMessageSquare, FiPlus, FiSettings, FiX } from "react-icons/fi";
 import { useProjects } from "@/components/projects/ProjectProvider";
 
-export default function Sidebar(){
- const pathname=usePathname();const {getProject,openCreateProject}=useProjects();const [mobile,setMobile]=useState(false),[open,setOpen]=useState(false);
- useEffect(()=>{const check=()=>setMobile(innerWidth<800);check();addEventListener("resize",check);return()=>removeEventListener("resize",check)},[]);
- useEffect(()=>{const handler=()=>setOpen(true);addEventListener("arpis-open-menu",handler);return()=>removeEventListener("arpis-open-menu",handler)},[]);
- const parts=pathname.split("/").filter(Boolean);const projectId=parts[0]==="projects"&&parts[1]&&parts[1]!=="new"?parts[1]:null;const project=projectId?getProject(projectId):undefined;
- const global=[["/","Dashboard",FiHome],["/projects","Projects",FiLayers]] as const;
- const sections=projectId?[[`/projects/${projectId}`,"Overview",FiBarChart2],[`/projects/${projectId}/papers`,"Papers",FiFileText],[`/projects/${projectId}/chat`,"AI Chat",FiMessageSquare],[`/projects/${projectId}/compare`,"Compare",FiLayers],[`/projects/${projectId}/graph`,"Knowledge Graph",FiGitBranch],[`/projects/${projectId}/notes`,"Notes",FiBookOpen],[`/projects/${projectId}/review`,"Literature Review",FiBookOpen],[`/projects/${projectId}/exports`,"Exports",FiDownload],[`/projects/${projectId}/settings`,"Settings",FiSettings]] as const:[];
- if(mobile&&!open)return null;
- const item=(href:string,label:string,Icon:typeof FiHome)=>{const active=href===`/projects/${projectId}`?pathname===href:href==="/"?pathname===href:pathname.startsWith(href);return <Link href={href} key={href} onClick={()=>mobile&&setOpen(false)} className="arpis-nav-link" style={{display:"flex",alignItems:"center",gap:13,padding:"11px 12px",borderRadius:10,marginBottom:5,background:active?"rgba(36,227,255,.15)":"transparent",color:active?"var(--arp-accent)":"var(--arp-text-main)",fontWeight:active?650:450}}><Icon size={18}/>{!mobile&&<span>{label}</span>}</Link>};
- return <aside className="arpis-sidebar" style={{position:mobile?"fixed":"sticky",top:0,left:0,height:"100vh",width:mobile?260:"100%",zIndex:60,padding:"22px 18px",overflowY:"auto"}}>{mobile&&<button onClick={()=>setOpen(false)} aria-label="Close menu" style={{float:"right",border:0,background:"transparent",color:"inherit"}}><FiX size={22}/></button>}<Link href="/" style={{display:"flex",alignItems:"center",gap:12,marginBottom:32}}><span style={{display:"grid",placeItems:"center",width:40,height:40,borderRadius:12,background:"linear-gradient(135deg,#29f4ff,#7655ff)",color:"#031015",fontWeight:900}}>A</span>{!mobile&&<span><strong style={{display:"block",letterSpacing:2}}>ARPIS</strong><small style={{color:"var(--arp-text-muted)"}}>RESEARCH OS</small></span>}</Link>{projectId&&<><div style={{padding:"11px",marginBottom:18,border:"1px solid var(--arp-border-subtle)",borderRadius:11}}><small style={{color:"var(--arp-text-muted)"}}>CURRENT PROJECT</small><strong style={{display:"block",marginTop:6,fontSize:13}}>{project?.icon} {project?.name??"Project"}</strong></div><nav>{sections.map(([h,l,I])=>item(h,l,I))}</nav><div style={{height:1,background:"var(--arp-border-subtle)",margin:"20px 0"}}/></>}<small style={{display:"block",margin:"0 10px 9px",color:"var(--arp-text-muted)",textTransform:"uppercase",letterSpacing:1.3}}>Workspace</small><nav>{global.map(([h,l,I])=>item(h,l,I))}</nav><button onClick={openCreateProject} style={{display:"flex",alignItems:"center",gap:13,width:"100%",padding:"11px 12px",border:0,background:"transparent",color:"var(--arp-text-main)",cursor:"pointer"}}><FiPlus size={18}/>{!mobile&&"New Project"}</button></aside>
+type IconType = typeof FiHome;
+type NavigationItem = readonly [string, string, IconType];
+
+export default function Sidebar() {
+  const pathname = usePathname();
+  const { getProject, openCreateProject } = useProjects();
+  const [mobile, setMobile] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const check = () => setMobile(window.innerWidth < 900);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+  useEffect(() => {
+    const handler = () => setOpen(true);
+    window.addEventListener("arpis-open-menu", handler);
+    return () => window.removeEventListener("arpis-open-menu", handler);
+  }, []);
+  useEffect(() => {
+    if (!mobile || !open) return;
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false); };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [mobile, open]);
+
+  const parts = pathname.split("/").filter(Boolean);
+  const projectId = parts[0] === "projects" && parts[1] && parts[1] !== "new" ? parts[1] : null;
+  const project = projectId ? getProject(projectId) : undefined;
+  const global: NavigationItem[] = [["/", "Dashboard", FiHome], ["/projects", "Projects", FiLayers]];
+  const sections: NavigationItem[] = projectId ? [
+    [`/projects/${projectId}`, "Overview", FiBarChart2],
+    [`/projects/${projectId}/papers`, "Papers", FiFileText],
+    [`/projects/${projectId}/chat`, "AI Chat", FiMessageSquare],
+    [`/projects/${projectId}/compare`, "Compare", FiLayers],
+    [`/projects/${projectId}/graph`, "Knowledge Graph", FiGitBranch],
+    [`/projects/${projectId}/notes`, "Notes", FiBookOpen],
+    [`/projects/${projectId}/review`, "Literature Review", FiBookOpen],
+    [`/projects/${projectId}/exports`, "Exports", FiDownload],
+    [`/projects/${projectId}/settings`, "Settings", FiSettings],
+  ] : [];
+
+  if (mobile && !open) return null;
+  const renderItem = ([href, label, Icon]: NavigationItem) => {
+    const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
+    return <Link href={href} key={href} onClick={() => mobile && setOpen(false)} aria-current={active ? "page" : undefined} className="arpis-nav-link" style={{ display: "flex", alignItems: "center", gap: 13, padding: "11px 12px", borderRadius: 10, marginBottom: 5, background: active ? "rgba(36,227,255,.15)" : "transparent", color: active ? "var(--arp-accent)" : "var(--arp-text-main)", fontWeight: active ? 650 : 450 }}><Icon size={18}/>{!mobile && <span>{label}</span>}</Link>;
+  };
+
+  return <>
+    {mobile && <button type="button" className="arpis-sidebar-backdrop" aria-label="Close navigation menu" onClick={() => setOpen(false)}/>}
+    <aside className="arpis-sidebar" aria-label="Main navigation" style={{ position: mobile ? "fixed" : "sticky", top: 0, left: 0, height: "100vh", width: mobile ? 280 : "100%", zIndex: 61, padding: "22px 18px", overflowY: "auto" }}>
+      {mobile && <button type="button" onClick={() => setOpen(false)} aria-label="Close menu" style={{ float: "right", border: 0, background: "transparent", color: "inherit", cursor: "pointer" }}><FiX size={22}/></button>}
+      <Link href="/" onClick={() => mobile && setOpen(false)} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 32 }}><span style={{ display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,#29f4ff,#7655ff)", color: "#031015", fontWeight: 900 }}>A</span>{!mobile && <span><strong style={{ display: "block", letterSpacing: 2 }}>ARPIS</strong><small style={{ color: "var(--arp-text-muted)" }}>RESEARCH OS</small></span>}</Link>
+      {projectId && <><div style={{ padding: 11, marginBottom: 18, border: "1px solid var(--arp-border-subtle)", borderRadius: 11 }}><small style={{ color: "var(--arp-text-muted)" }}>CURRENT PROJECT</small><strong style={{ display: "block", marginTop: 6, fontSize: 13 }}>{project?.icon} {project?.name ?? "Project"}</strong></div><nav aria-label="Project navigation">{sections.map(renderItem)}</nav><div style={{ height: 1, background: "var(--arp-border-subtle)", margin: "20px 0" }}/></>}
+      <small style={{ display: "block", margin: "0 10px 9px", color: "var(--arp-text-muted)", textTransform: "uppercase", letterSpacing: 1.3 }}>Workspace</small><nav aria-label="Workspace navigation">{global.map(renderItem)}</nav>
+      <button type="button" onClick={openCreateProject} style={{ display: "flex", alignItems: "center", gap: 13, width: "100%", padding: "11px 12px", border: 0, background: "transparent", color: "var(--arp-text-main)", cursor: "pointer" }}><FiPlus size={18}/>{!mobile && "New Project"}</button>
+    </aside>
+  </>;
 }
