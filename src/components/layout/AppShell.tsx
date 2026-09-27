@@ -2,6 +2,7 @@
 
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
+import StorageNotice from "./StorageNotice";
 import React from "react";
 
 /**
@@ -30,6 +31,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         {/* MAIN PANEL */}
         <section className="arpis-shell-main">
           <Navbar />
+          <StorageNotice />
 
           {/* CONTENT SCROLL REGION */}
           <div className="arpis-shell-content">
