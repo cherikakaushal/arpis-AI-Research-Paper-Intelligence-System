@@ -1,1 +1,3 @@
-import ProjectSection from "@/components/projects/ProjectSection";export default function Page(){return <ProjectSection title="Settings" description="Manage project identity, metadata, and preferences."/>}
+﻿import { Suspense } from 'react';
+import ProjectWorkspace from '@/components/product/ProjectWorkspace';
+export default async function Page({params}:{params:Promise<{id:string}>}){const {id}=await params;return <Suspense fallback={<p>Loading...</p>}><ProjectWorkspace id={id} tab="settings"/></Suspense>;}
