@@ -1,5 +1,5 @@
 export type ReadingStatus="Unread"|"Reading"|"Completed"|"Reviewed";
-export type Paper={id:string;projectId:string;title:string;authors:string[];year:number;abstract:string;keywords:string[];journal:string;pages:number;uploadedAt:string;status:ReadingStatus;tags:string[];favorite:boolean;fileName?:string};
+export type Paper={id:string;projectId:string;title:string;authors:string[];year:number;abstract:string;keywords:string[];journal:string;pages:number;uploadedAt:string;status:ReadingStatus;tags:string[];favorite:boolean;fileName?:string;doi?:string;url?:string;domain?:string;sourceType?:string;notes?:string;archived?:boolean};
 export const PAPERS_STORAGE_KEY="arpis_papers_v1";
 export const seedPapers:Paper[]=[
  {id:"attention-is-all-you-need",projectId:"ai-healthcare",title:"Attention Is All You Need",authors:["Ashish Vaswani","Noam Shazeer","Niki Parmar"],year:2017,abstract:"The dominant sequence transduction models are based on complex recurrent or convolutional neural networks. This work proposes the Transformer, an architecture based solely on attention mechanisms.",keywords:["attention","transformer","sequence modeling"],journal:"NeurIPS",pages:15,uploadedAt:"2026-07-20T10:00:00.000Z",status:"Reviewed",tags:["Transformer","LLM"],favorite:true},
