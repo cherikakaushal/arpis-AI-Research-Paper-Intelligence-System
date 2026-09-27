@@ -1,9 +1,10 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import Assistant from "@/components/product/Assistant";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FiDownload, FiPlus, FiSave, FiSearch, FiTrash2 } from "react-icons/fi";
+import { FiDownload, FiPlus, FiSave, FiTrash2 } from "react-icons/fi";
 import { usePapers } from "@/components/papers/PaperProvider";
 import { useProjects } from "@/components/projects/ProjectProvider";
 import { useResearch } from "@/components/research/ResearchProvider";
@@ -21,7 +22,7 @@ export default function ProjectTools({ projectId, mode }: { projectId: string; m
 
   const projectPapers = getProjectPapers(projectId);
   if (mode === "Notes") return <NotesTool projectId={projectId} papers={projectPapers} />;
-  if (mode === "AI Chat") return <ChatTool projectId={projectId} papers={projectPapers} />;
+  if (mode === "AI Chat") return <Assistant projectId={projectId} />;
   if (mode === "Compare") return <CompareTool projectId={projectId} papers={projectPapers} />;
   if (mode === "Knowledge Graph") return <GraphTool papers={projectPapers} />;
   if (mode === "Literature Review") return <ReviewTool projectId={projectId} project={project} papers={projectPapers} />;
@@ -64,56 +65,6 @@ function NotesTool({ projectId, papers }: { projectId: string; papers: ReturnTyp
       {message && <p className={styles.feedback} role="status">{message}</p>}
       <button className={styles.primary} type="submit"><FiSave/> Save note</button>
     </form>
-  </div>;
-}
-
-function ChatTool({ projectId, papers }: { projectId: string; papers: ReturnType<typeof usePapers>["papers"] }) {
-  const { conversations, ready, createConversation, saveConversation, deleteConversation } = useResearch();
-  const threads = conversations.filter((conversation) => conversation.projectId === projectId);
-  const [activeId, setActiveId] = useState("");
-  const active = threads.find((thread) => thread.id === activeId);
-  const [question, setQuestion] = useState("");
-  const [error, setError] = useState("");
-  const [query, setQuery] = useState("");
-  const results = useMemo(() => {
-    const terms = query.toLowerCase().split(/\W+/).filter((term) => term.length > 2);
-    if (!terms.length) return [];
-    return papers.map((paper) => {
-      const source = `${paper.title} ${paper.abstract} ${paper.keywords.join(" ")} ${paper.tags.join(" ")}`.toLowerCase();
-      return { paper, score: terms.reduce((score, term) => score + (source.includes(term) ? 1 : 0), 0) };
-    }).filter((item) => item.score > 0).sort((a, b) => b.score - a.score).slice(0, 4);
-  }, [papers, query]);
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
-    const text = question.trim();
-    if (!text) { setError("Enter a question to search this project’s papers."); return; }
-    const matching = papers.map((paper) => {
-      const haystack = `${paper.title} ${paper.abstract} ${paper.keywords.join(" ")}`.toLowerCase();
-      const terms = text.toLowerCase().split(/\W+/).filter((term) => term.length > 2);
-      return { paper, score: terms.reduce((score, term) => score + (haystack.includes(term) ? 1 : 0), 0) };
-    }).filter((item) => item.score > 0).sort((a, b) => b.score - a.score).slice(0, 3);
-    const answer = matching.length
-      ? `Local paper search found ${matching.length} relevant source${matching.length === 1 ? "" : "s"}. This is a keyword match, not an AI-generated answer.\n\n${matching.map(({ paper }) => `• ${paper.title}: ${(paper.abstract || "No abstract saved.").slice(0, 340)}`).join("\n\n")}`
-      : "No matching terms were found in the saved titles, abstracts, and keywords. Add paper metadata or try different search terms. This local search does not generate AI answers.";
-    const now = new Date().toISOString();
-    const thread = active ?? createConversation(projectId, text.slice(0, 60));
-    saveConversation({ ...thread, title: thread.title || text.slice(0, 60), messages: [...thread.messages, { id: crypto.randomUUID(), role: "user", content: text, createdAt: now }, { id: crypto.randomUUID(), role: "assistant", content: answer, createdAt: now }], updatedAt: now });
-    setActiveId(thread.id); setQuestion(""); setError("");
-  };
-  if (!ready) return <p className={styles.notice}>Loading conversations…</p>;
-  return <div className={styles.columns}>
-    <section className={styles.panel}>
-      <div className={styles.panelHeader}><h2>Conversations</h2><button type="button" onClick={() => { setActiveId(""); setQuestion(""); }} aria-label="Start a new conversation"><FiPlus/></button></div>
-      {threads.length ? <ul className={styles.threadList}>{threads.map((thread) => <li key={thread.id}><button type="button" className={activeId === thread.id ? styles.selected : ""} onClick={() => setActiveId(thread.id)}>{thread.title}</button><button type="button" className={styles.iconButton} aria-label={`Delete ${thread.title}`} onClick={() => { if (window.confirm("Delete this conversation?")) { deleteConversation(thread.id); if (activeId === thread.id) setActiveId(""); } }}><FiTrash2/></button></li>)}</ul> : <p className={styles.empty}>Ask about saved project papers to start a conversation.</p>}
-      <p className={styles.localTag}>Local keyword search · no AI service configured</p>
-    </section>
-    <section className={styles.panel}>
-      <h2>{active?.title ?? "Search project papers"}</h2>
-      {active?.messages.map((message) => <article className={message.role === "user" ? styles.userMessage : styles.assistantMessage} key={message.id}><small>{message.role === "user" ? "You" : "Local source search"}</small><p>{message.content}</p></article>)}
-      <form onSubmit={submit}><label>Question or search terms<input value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="Search titles, abstracts, and keywords"/></label>{error && <p className={styles.error} role="alert">{error}</p>}<button className={styles.primary} type="submit"><FiSearch/> Search papers</button></form>
-      <label className={styles.inlineSearch}>Find a paper<input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Filter project sources"/></label>
-      {query && <ul className={styles.searchResults}>{results.map(({ paper }) => <li key={paper.id}><Link href={`/projects/${projectId}/papers/${paper.id}`}><strong>{paper.title}</strong><small>{paper.abstract || "No abstract saved."}</small></Link></li>)}</ul>}
-    </section>
   </div>;
 }
 
@@ -176,3 +127,5 @@ function SettingsTool({ project, papers }: { project: Project; papers: ReturnTyp
   const remove = () => { if (!window.confirm(`Delete “${project.name}” and its ${papers.length} saved paper record(s)? This cannot be undone.`)) return; deleteProjectPapers(project.id); deleteProjectData(project.id); deleteProject(project.id); router.push("/projects"); };
   return <div className={styles.stack}><form className={styles.panel} onSubmit={save}><h2>Project details</h2><label>Project name<input value={name} onChange={(event) => setName(event.target.value)} required maxLength={120}/></label><label>Description<textarea rows={3} value={description} onChange={(event) => setDescription(event.target.value)}/></label><label>Research domain<input value={domain} onChange={(event) => setDomain(event.target.value)} required/></label><label>Tags<input value={tags} onChange={(event) => setTags(event.target.value)} placeholder="AI, NLP, Healthcare"/></label>{message && <p role="status" className={styles.feedback}>{message}</p>}<button className={styles.primary} type="submit"><FiSave/> Save settings</button></form><section className={`${styles.panel} ${styles.danger}`}><h2>Delete project</h2><p>This removes the project and its paper metadata, notes, conversations, and comparisons from this browser.</p><button type="button" onClick={remove}><FiTrash2/> Delete {project.name}</button></section></div>;
 }
+
+
