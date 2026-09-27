@@ -1,4 +1,5 @@
 export type Project = {
+  status?: 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'ARCHIVED';
   id: string;
   name: string;
   description: string;
