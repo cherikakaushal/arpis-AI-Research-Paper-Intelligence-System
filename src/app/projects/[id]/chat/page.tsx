@@ -1,1 +1,3 @@
-import ProjectSection from "@/components/projects/ProjectSection";export default function Page(){return <ProjectSection title="AI Chat" description="Ask questions grounded in this project's papers and notes."/>}
+﻿import { Suspense } from 'react';
+import ProjectWorkspace from '@/components/product/ProjectWorkspace';
+export default async function Page({params}:{params:Promise<{id:string}>}){const {id}=await params;return <Suspense fallback={<p>Loading...</p>}><ProjectWorkspace id={id} tab="chat"/></Suspense>;}
