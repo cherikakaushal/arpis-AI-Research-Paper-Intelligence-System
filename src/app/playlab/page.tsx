@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import "./playlab.css";
 
 const GRID_SIZE = 9;
@@ -17,12 +18,14 @@ function NeuralFocusGame() {
   const [status, setStatus] = useState<"idle" | "running" | "finished">("idle");
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const roundRef = useRef(0);
 
   const startGame = () => {
     setScore(0);
     setRound(0);
+    roundRef.current = 0;
     setStatus("running");
-    setActiveIndex(Math.floor(Math.random() * GRID_SIZE));
+    setActiveIndex(2);
   };
 
   const stopGame = () => {
@@ -35,16 +38,17 @@ function NeuralFocusGame() {
     if (status !== "running") return;
 
     intervalRef.current = setInterval(() => {
-      setRound((prev) => {
-        const next = prev + 1;
-        if (next >= TOTAL_ROUNDS) {
-          stopGame();
-          return prev;
-        }
-        return next;
-      });
-
-      setActiveIndex(Math.floor(Math.random() * GRID_SIZE));
+      const next = roundRef.current + 1;
+      if (next >= TOTAL_ROUNDS) {
+        setRound(TOTAL_ROUNDS);
+        setStatus("finished");
+        setActiveIndex(null);
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        return;
+      }
+      roundRef.current = next;
+      setRound(next);
+      setActiveIndex((next * 5 + 2) % GRID_SIZE);
     }, ROUND_MS);
 
     return () => {
@@ -56,7 +60,7 @@ function NeuralFocusGame() {
     if (status !== "running") return;
     if (i === activeIndex) {
       setScore((s) => s + 1);
-      setActiveIndex(Math.floor(Math.random() * GRID_SIZE));
+      setActiveIndex((current) => ((current ?? 0) + 4) % GRID_SIZE);
     }
   };
 
@@ -167,27 +171,13 @@ export default function PlayLabPage() {
             <NeuralFocusGame />
           </div>
 
-          {/* RIGHT PANEL */}
+          {/* RESEARCH SHORTCUTS */}
           <div className="w3-col l4 m12 s12 w3-margin-bottom">
             <div className="playlab-card w3-card-4 w3-round-xxlarge">
-              <h4>Upcoming Experiments</h4>
-              <ul className="w3-ul w3-small">
-                <li>
-                  🧠 <b>Equation Memory</b>{" "}
-                  <span className="w3-tag w3-round-large w3-tiny w3-dark-grey">
-                    Coming soon
-                  </span>
-                </li>
-                <li>
-                  🌌 <b>Citation Maze</b>{" "}
-                  <span className="w3-tag w3-round-large w3-tiny w3-dark-grey">
-                    Prototype
-                  </span>
-                </li>
-                <li>
-                  ⏱ <b>Abstract Sprint</b>
-                </li>
-              </ul>
+              <h4>Back to research</h4>
+              <p className="w3-small">Your project data stays ready while you take a break.</p>
+              <p><Link href="/projects">Browse projects →</Link></p>
+              <p><Link href="/workspace">Open paper workspace →</Link></p>
             </div>
           </div>
         </div>
