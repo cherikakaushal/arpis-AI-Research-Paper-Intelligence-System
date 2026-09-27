@@ -1,83 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import { usePapers } from "@/components/papers/PaperProvider";
 import styles from "./heatmap.module.css";
 
-const sampleText = [
-  { text: "Quantum entanglement is a key property for NISQ devices.", score: 0.92 },
-  { text: "Noise reduces circuit fidelity over time.", score: 0.70 },
-  { text: "Hybrid variational training stabilizes optimization.", score: 0.55 },
-  { text: "Gate pruning can improve energy efficiency.", score: 0.38 },
-  { text: "Future work explores multi-qubit error correction.", score: 0.18 },
-];
-
 export default function PDFHeatmapPage() {
-  const [heatmap, setHeatmap] = useState(true);
-  const [hoverText, setHoverText] = useState<string | null>(null);
+  const { papers, ready } = usePapers();
+  const [paperId, setPaperId] = useState("");
+  const [keyword, setKeyword] = useState("");
+  const paper = papers.find((item) => item.id === paperId) ?? papers[0];
+  const focus = keyword || paper?.keywords[0] || paper?.tags[0] || "";
+  const sentences = useMemo(() => (paper?.abstract ?? "").split(/(?<=[.!?])\s+/).map((text) => text.trim()).filter(Boolean), [paper]);
+  const matches = sentences.filter((sentence) => focus && sentence.toLowerCase().includes(focus.toLowerCase())).length;
 
-  const getColor = (score: number) => {
-    if (score > 0.8) return "var(--arp-heat-high)";
-    if (score > 0.5) return "var(--arp-heat-mid)";
-    return "var(--arp-heat-low)";
-  };
-
-  return (
-    <div className={styles.wrapper}>
-      <h2 className={styles.title}>PDF Heatmap (Mock)</h2>
-      <p className={styles.subtitle}>
-        ARPIS highlights the most important sentences detected by the model (mocked).
-      </p>
-
-      <div className={styles.toggleRow}>
-        <button
-          className={heatmap ? styles.toggleActive : styles.toggle}
-          onClick={() => setHeatmap(true)}
-        >
-          Heatmap Mode
-        </button>
-
-        <button
-          className={!heatmap ? styles.toggleActive : styles.toggle}
-          onClick={() => setHeatmap(false)}
-        >
-          Normal Mode
-        </button>
-      </div>
-
-      <div className={styles.viewer}>
-        {/* Sidebar thumbnails */}
-        <div className={styles.sidebar}>
-          <div className={styles.thumb}>1</div>
-          <div className={styles.thumb}>2</div>
-          <div className={styles.thumb}>3</div>
-        </div>
-
-        {/* Main PDF mock viewer */}
-        <div className={styles.pdfPane}>
-          {sampleText.map((line, i) => (
-            <div
-              key={i}
-              className={styles.line}
-              style={{
-                background: heatmap ? getColor(line.score) : "transparent",
-              }}
-              onMouseEnter={() =>
-                setHoverText(
-                  `ARPIS highlighted this because importance score = ${
-                    line.score * 100
-                  }% (mock)`
-                )
-              }
-              onMouseLeave={() => setHoverText(null)}
-            >
-              {line.text}
-            </div>
-          ))}
-        </div>
-
-        {/* Tooltip */}
-        {hoverText && <div className={styles.tooltip}>{hoverText}</div>}
-      </div>
-    </div>
-  );
+  return <main className={styles.wrapper} style={{ padding: "20px", maxWidth: 1100, margin: "0 auto" }}>
+    <h1 className={styles.title}>PDF Heatmap</h1>
+    <p className={styles.subtitle}>Inspect topic matches in a paper’s saved abstract. Highlighting uses literal keyword matching, not model-generated importance scores.</p>
+    {!ready ? <p role="status">Loading papers…</p> : papers.length === 0 ? <section className="arpis-glass-card" style={{ padding: 22 }}><h2>No saved papers</h2><p>Add a paper to a project to inspect its abstract.</p><Link href="/upload">Upload paper</Link></section> : <>
+      <div className={styles.toggleRow}><label>Paper<select aria-label="Select paper" value={paper?.id ?? ""} onChange={(event) => { setPaperId(event.target.value); setKeyword(""); }}>{papers.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label><label>Focus keyword<select aria-label="Select focus keyword" value={focus} onChange={(event) => setKeyword(event.target.value)}><option value="">No keyword filter</option>{[...new Set([...(paper?.keywords ?? []), ...(paper?.tags ?? [])])].map((term) => <option key={term} value={term}>{term}</option>)}</select></label></div>
+      {paper && <section className={styles.viewer}><article className={styles.pdfPane}><header><h2>{paper.title}</h2><p>{paper.journal} · {paper.year} · {sentences.length} abstract sentences</p></header>{sentences.length ? sentences.map((sentence, index) => { const matched = Boolean(focus) && sentence.toLowerCase().includes(focus.toLowerCase()); return <p key={`${paper.id}-${index}`} className={styles.line} style={{ background: matched ? "rgba(255, 183, 77, .22)" : "transparent", borderLeft: matched ? "3px solid #ffb74d" : "3px solid transparent" }}>{sentence}</p>; }) : <p>No abstract text is saved for this paper.</p>}<small>{focus ? `${matches} of ${sentences.length} sentences contain “${focus}”.` : "Choose a keyword to highlight matching sentences."}</small></article><aside><Link href={`/projects/${paper.projectId}/papers/${paper.id}/reader`}>Open saved PDF</Link><p>Matching text is drawn from the stored abstract; uploaded PDF text is not extracted in this browser.</p></aside></section>}
+    </>}
+  </main>;
 }
